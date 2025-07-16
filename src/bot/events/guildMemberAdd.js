@@ -9,10 +9,37 @@ export default {
         const config = await getConfig(guild.id)
         if (!config) return
 
-        const welcomeMsg = process.env.WELCOMEMESSAGE
+        const welcomeToggle = config.WELCOMETOGGLE
 
-        if (config.welcomeChannelId) {
-            const welcomeChannel = guild.channels.cache.get(config.welcomeChannelId)
+        if (welcomeToggle){
+            const welcomeMsg = config.WELCOMEMSG
+            if (config.welcomeChannelId) {
+                const welcomeChannel = guild.channels.cache.get(config.welcomeChannelId)
+                if (welcomeChannel?.isTextBased()) {
+                    welcomeChannel.send({
+                        embeds: [
+                            {
+                                color: 0x57f287,
+                                title: 'Member Joined',
+                                description: welcomeMsg,
+                                thumbnail: {
+                                    url: member.user.displayAvatarURL({ dynamic: true })
+                                },
+                                footer: {
+                                    text: `User ID: ${member.id}`
+                                },
+                                timestamp: new Date().toISOString(),
+                            },
+                        ],
+                    })
+                }
+            }
+        }
+        
+        const memberLogEnabled = config.MEMBERLOGENABLED
+
+        if (memberLogEnabled) {
+            const modLogChannel = config.MODLOGCHANNEL
             if (modLogChannel?.isTextBased()) {
                 modLogChannel.send({
                     embeds: [
@@ -24,16 +51,16 @@ export default {
                                 url: member.user.displayAvatarURL({ dynamic: true })
                             },
                             footer: {
-                                text: `User ID: ${member.id}`
+                                text: `User ID: ${member.id} | © Cosmic Kush Discord Bot`
                             },
-                            timestamp: new Date().toISOString(),
-                        },
-                    ],
+                            timestamp: new Date().toISOString()
+                        }
+                    ]
                 })
             }
         }
 
-        if (config.welcomeDm) {
+        if (config.WELCOMEDM) {
             try {
                 await member.send({
                     content: welcomeMsg.replace(`<@${member.id}>`, member.user.username)
