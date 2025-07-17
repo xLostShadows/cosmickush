@@ -28,6 +28,7 @@ export default {
                         .setRequired(true)
                 )
         ),
+    middleware: [ ['requireRole', 'ADMIN_ROLE_ID'], ['requirePermission', 'BanMembers'] ],
 
     async execute(interaction) {
         const sub = interaction.options.getSubcommand()
@@ -42,7 +43,11 @@ export default {
                 }
                 return interaction.reply({ content: `\`${key}\` = \`${config[key]}\``, ephemeral: true })
             } catch (error) {
-                console.log(error)
+                console.error(error)
+                return interaction.reply({
+                    content: `${error}`,
+                    ephemeral: true
+                })
             }
         }
 
@@ -58,7 +63,11 @@ export default {
                 const updated = await setConfig(guildId, { [key]: parsedValue })
                 return interaction.reply({ content: `✅ Set \`${key}\` to \`${parsedValue}\`.`, ephemeral: true })
             } catch (error) {
-                console.log(error)
+                console.error(error)
+                return interaction.reply({
+                    content: `${error}`,
+                    ephemeral: true
+                })
             }
         }
     }

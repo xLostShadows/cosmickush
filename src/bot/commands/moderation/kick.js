@@ -1,14 +1,13 @@
 import {
     SlashCommandBuilder,
-    PermissionFlagsBits,
     EmbedBuilder
 } from 'discord.js'
+
 
 export default {
     data: new SlashCommandBuilder()
         .setName('kick')
         .setDescription('Kick a user from the server')
-        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
         .addStringOption(option =>
             option.setName('user')
                 .setDescription('The @user mention or ID of the user you wish to kick')
@@ -19,6 +18,8 @@ export default {
                 .setDescription('Reason for the kick')
                 .setRequired(true)
         ),
+    
+    middleware: [ ['requireRole', 'ADMIN_ROLE_ID'], ['requirePermission', 'BanMembers'] ],
 
     async execute(interaction) {
         const input = interaction.options.getString('user')

@@ -1,6 +1,5 @@
 import {
     SlashCommandBuilder,
-    PermissionFlagsBits,
     EmbedBuilder
 } from 'discord.js'
 
@@ -8,7 +7,6 @@ export default {
     data: new SlashCommandBuilder()
         .setName('ban')
         .setDescription('Ban a user from the server')
-        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
         .addStringOption(option =>
             option.setName('user')
                 .setDescription('The @user mention or ID of the user you wish to ban')
@@ -19,6 +17,7 @@ export default {
                 .setDescription('Reason for the ban')
                 .setRequired(true)
         ),
+        middleware: [ ['requireRole', 'ADMIN_ROLE_ID'], ['requirePermission', 'BanMembers'] ],
 
         async execute(interaction) {
             const input = interaction.options.getString('user')
