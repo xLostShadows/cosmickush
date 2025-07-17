@@ -35,23 +35,31 @@ export default {
         const guildId = interaction.guildId
 
         if (sub === 'get') {
-            const config = await getConfig(guildId)
-            if (!(key in config)) {
-                return interaction.reply({ content: `❌ Key \`${key}\` not found in config.`, ephemeral: true })
+            try {
+                const config = await getConfig(guildId)
+                if (!(key in config)) {
+                    return interaction.reply({ content: `❌ Key \`${key}\` not found in config.`, ephemeral: true })
+                }
+                return interaction.reply({ content: `\`${key}\` = \`${config[key]}\``, ephemeral: true })
+            } catch (error) {
+                console.log(error)
             }
-            return interaction.reply({ content: `\`${key}\` = \`${config[key]}\``, ephemeral: true })
         }
 
         if (sub === 'set') {
-            const value = interaction.options.getString('value')
-            // Try to parse value as boolean/number if possible
-            let parsedValue = value
-            if (value === 'true') parsedValue = true
-            else if (value === 'false') parsedValue = false
-            else if (!isNaN(Number(value))) parsedValue = Number(value)
+            try {
+                const value = interaction.options.getString('value')
+                // Try to parse value as boolean/number if possible
+                let parsedValue = value
+                if (value === 'true') parsedValue = true
+                else if (value === 'false') parsedValue = false
+                else if (!isNaN(Number(value))) parsedValue = Number(value)
 
-            const updated = await setConfig(guildId, { [key]: parsedValue })
-            return interaction.reply({ content: `✅ Set \`${key}\` to \`${parsedValue}\`.`, ephemeral: true })
+                const updated = await setConfig(guildId, { [key]: parsedValue })
+                return interaction.reply({ content: `✅ Set \`${key}\` to \`${parsedValue}\`.`, ephemeral: true })
+            } catch (error) {
+                console.log(error)
+            }
         }
     }
 }
