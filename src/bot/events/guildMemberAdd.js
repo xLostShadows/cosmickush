@@ -13,8 +13,8 @@ export default {
 
         if (welcomeToggle){
             const welcomeMsg = config.WELCOMEMSG
-            if (config.welcomeChannelId) {
-                const welcomeChannel = guild.channels.cache.get(config.welcomeChannelId)
+            if (config.WELCOMECHANNELID) {
+                const welcomeChannel = guild.channels.cache.get(config.WELCOMECHANNELID)
                 if (welcomeChannel?.isTextBased()) {
                     welcomeChannel.send({
                         embeds: [
