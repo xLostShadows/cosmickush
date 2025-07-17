@@ -9,11 +9,11 @@ export default {
         const config = await getConfig(guild.id)
         if (!config) return
 
-        const welcomeEnabled = config.WELCOMETOGGLE
+        const leaveEnabled = config.LEAVETOGGLE
         const leaveMsg = config.LEAVEMESSAGE
 
         if (welcomeEnabled) {
-            if (config.welcomeChannelId) {
+            if (config.WELCOMECHANNELID) {
                 const welcomeChannel = guild.channels.cache.get(config.WELCOMECHANNELID)
                 if (welcomeChannel?.isTextBased()) {
                     welcomeChannel.send({
