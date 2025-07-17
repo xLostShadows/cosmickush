@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Optional: set environment variables (better to pass at runtime or use dotenv)
-ENV NODE_ENV=production
+ENV NODE_ENV='./.env'
 
 # Start the bot
 CMD ["node", "src/shard.js"]
