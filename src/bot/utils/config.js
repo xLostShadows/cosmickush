@@ -2,7 +2,13 @@ import redis from '../clients/redis.js'
 
 const defaultConfig = {
     LOG_CHANNEL_ID: null,
-    ALLOW_DM_COMMANDS: false
+    ALLOW_DM_COMMANDS: false,
+    WELCOMEMSG: null,
+    MEMBERLOGENABLED: false,
+    WELCOMETOGGLE: false,
+    LEAVETOGGLE: false,
+    LEAVEMSG: null,
+    WELCOMECHANNELID: null
 }
 
 const keyFor = guildId => `config:guild:${guildId}`
