@@ -1,15 +1,14 @@
 import { readdir } from 'fs/promises'
 import { dirname, join, parse } from 'path'
 import { fileURLToPath } from 'url'
-import { getConfig } from '../utils/config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 /**
- * Loads all middleware functions from the middleware directory.
+ * Loads all middleware factories from the middleware directory.
  * Returns a Map where the key is the middleware filename (without extension)
- * and the value is a function that injects guild config as the first argument.
+ * and the value is the middleware factory function.
  */
 export async function loadMiddleware(middlewarePath = join(__dirname, '..', 'middleware')) {
     const middlewareMap = new Map()
@@ -21,17 +20,7 @@ export async function loadMiddleware(middlewarePath = join(__dirname, '..', 'mid
             try {
                 const mod = await import(fullPath)
                 const key = parse(file.name).name
-                // Wrap middleware so it always receives guild config as first argument
-                const original = mod.default || mod
-                // Factory: (...args) => async (interaction, ...rest) => { ... }
-                middlewareMap.set(key, (...args) => {
-                    const middlewareFn = original(...args)
-                    return async (interaction, ...rest) => {
-                        const guildId = interaction.guildId
-                        const config = guildId ? await getConfig(guildId) : {}
-                        return middlewareFn(config, interaction, ...rest)
-                    }
-                })
+                middlewareMap.set(key, mod.default || mod)
             } catch (error) {
                 console.error(`Failed loading middleware ${file.name}: ${error}`)
             }

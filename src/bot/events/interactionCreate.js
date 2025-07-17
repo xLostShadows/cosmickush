@@ -1,13 +1,23 @@
 import { Events } from 'discord.js'
-import { getConfig } from '../utils/config.js'
 
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
-        getConfig(interaction.guildId)
         if (!interaction.isChatInputCommand()) return
-
+        if (!interaction.isCommand()) return
+        
         const command = client.commands.get(interaction.commandName)
+        if (!command) return
+        
+        if (Array.isArray(command.middleware)) {
+            for (const mw of command.middleware) {
+                const passed = await mw(interaction)
+                if (!passed) return
+            }
+        }
+        
+        await command.execute(interaction)
+
         if (!command) {
             console.error(`! Unknown command: ${interaction.commandName}`)
             return interaction.reply({
@@ -24,7 +34,7 @@ export default {
                 }
             }
 
-            await command.execute(interaction, client, config)
+            await command.execute(interaction, client)
         } catch (error) {
             console.error(`Error running command "${interaction.commandName}": ${error}`)
 
