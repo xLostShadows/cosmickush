@@ -2,52 +2,40 @@ import { Events } from 'discord.js'
 
 export default {
     name: Events.InteractionCreate,
-    async execute(interaction, client) {
+    once: false,
+    async execute(interaction) {
         if (!interaction.isChatInputCommand()) return
-        if (!interaction.isCommand()) return
-        
-        const command = client.commands.get(interaction.commandName)
+
+        const command = interaction.client.commands.get(interaction.commandName)
         if (!command) return
-        
+
+        // Run middleware (all must return true)
         if (Array.isArray(command.middleware)) {
             for (const mw of command.middleware) {
-                const passed = await mw(interaction)
+                const passed = await mw(interaction, () => true)
                 if (!passed) return
             }
         }
-        
-        await command.execute(interaction)
-
-        if (!command) {
-            console.error(`! Unknown command: ${interaction.commandName}`)
-            return interaction.reply({
-                content: `Unknown command: ${interaction.commandName}. If you believe this is an error, please contact the bot developer.`,
-                ephemeral: true
-            })
-        }
 
         try {
-            if (command.middleware && Array.isArray(command.middleware)) {
-                for (const middleware of command.middleware) {
-                    const passed = await middleware(interaction, client)
-                    if (!passed) return
-                }
-            }
-
-            await command.execute(interaction, client)
+            await command.execute(interaction)
         } catch (error) {
-            console.error(`Error running command "${interaction.commandName}": ${error}`)
+            console.error(`Error running command "${interaction.commandName}":`, error)
 
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({
-                    content: 'There was an error executing this command.',
-                    ephemeral: true
-                })
-            } else {
-                await interaction.reply({
-                    content: 'There was an error executing this command.',
-                    ephemeral: true
-                })
+            try {
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp({
+                        content: 'There was an error executing this command.',
+                        ephemeral: true
+                    })
+                } else {
+                    await interaction.reply({
+                        content: 'There was an error executing this command.',
+                        ephemeral: true
+                    })
+                }
+            } catch (err) {
+                console.error('Failed to send error reply:', err)
             }
         }
     }

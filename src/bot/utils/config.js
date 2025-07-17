@@ -9,7 +9,8 @@ const defaultConfig = {
     LEAVETOGGLE: false,
     LEAVEMSG: null,
     WELCOMECHANNELID: null,
-    MOD_ROLE_ID: null
+    MOD_ROLE_ID: null,
+    ADMIN_ROLE_ID: null
 }
 
 const keyFor = guildId => `config:guild:${guildId}`

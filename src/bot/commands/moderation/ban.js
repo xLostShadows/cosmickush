@@ -2,6 +2,7 @@ import {
     SlashCommandBuilder,
     EmbedBuilder
 } from 'discord.js'
+import { getConfig } from '../../utils/config.js'
 
 export default {
     data: new SlashCommandBuilder()
@@ -17,11 +18,13 @@ export default {
                 .setDescription('Reason for the ban')
                 .setRequired(true)
         ),
-        middleware: [ ['requireRole', 'ADMIN_ROLE_ID'], ['requirePermission', 'BanMembers'] ],
+    middleware: [ ['requireRole', 'ADMIN_ROLE_ID'], ['requirePermission', 'BanMembers'] ],
 
-        async execute(interaction) {
+    async execute(interaction) {
+        try {
+            const config = await getConfig(interaction.guildId)
             const input = interaction.options.getString('user')
-            const reason = interaction.options.getStromg('reason')
+            const reason = interaction.options.getString('reason')
 
             await interaction.deferReply({ ephemeral: true })
 
@@ -29,7 +32,7 @@ export default {
             try {
                 user = await interaction.client.users.fetch(input.replace(/[<@!>]/g, ''))
             } catch {
-                return interaction.reply('Invalid user ID or mention')
+                return interaction.editReply('❌ Invalid user ID or mention.')
             }
 
             const member = await interaction.guild.members.fetch(user.id).catch(() => null)
@@ -44,11 +47,14 @@ export default {
                 return interaction.editReply('❌ Failed to ban user. Do I have the `Ban Members` permission?')
             }
 
-            const logChannel = interaction.guild.channels.cache.find(ch => ch.id === process.env.MOD_LOG_CHANNEL && ch.isTextBased())
+            const logChannelId = config.MOD_LOG_CHANNEL || config.LOG_CHANNEL_ID
+            const logChannel = logChannelId
+                ? interaction.guild.channels.cache.get(logChannelId)
+                : null
 
-            if (logChannel) {
+            if (logChannel && logChannel.isTextBased()) {
                 const embed = new EmbedBuilder()
-                    .setName('🔨 Member Banned')
+                    .setTitle('🔨 Member Banned')
                     .setColor(0xff0000)
                     .addFields(
                         { 
@@ -58,7 +64,7 @@ export default {
                         },
                         {
                             name: 'By',
-                            value: `${interaction.user.tag}`,
+                            value: `${interaction.user.tag} (${interaction.user.id})`,
                             inline: false
                         },
                         {
@@ -73,5 +79,19 @@ export default {
             }
 
             return interaction.editReply(`✅ ${user.tag} has been banned.\n📝 Reason: ${reason}`)
+        } catch (error) {
+            console.error(error)
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    content: '❌ An error occurred while executing this command.',
+                    ephemeral: true
+                })
+            } else {
+                await interaction.reply({
+                    content: '❌ An error occurred while executing this command.',
+                    ephemeral: true
+                })
+            }
         }
+    }
 }

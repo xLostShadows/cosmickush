@@ -1,5 +1,5 @@
 import { Events } from 'discord.js'
-import getConfig from '../utils/config.js'
+import { getConfig } from '../utils/config.js'
 
 export default {
     name: Events.GuildMemberAdd,

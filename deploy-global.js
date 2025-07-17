@@ -36,14 +36,20 @@ async function deploy() {
   const rest = new REST().setToken(process.env.TOKEN)
 
   try {
-    console.log(`📤 Deploying ${commands.length} global commands...`)
+    console.log(`📤 Deploying ${commands.length} commands...`)
 
-    await rest.put(
-      Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
-      { body: commands }
-    )
+    let route
+    if (process.env.GUILD_ID) {
+      route = Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, process.env.GUILD_ID)
+      console.log(`Deploying to guild: ${process.env.GUILD_ID}`)
+    } else {
+      route = Routes.applicationCommands(process.env.DISCORD_CLIENT_ID)
+      console.log('Deploying globally')
+    }
 
-    console.log('✅ Successfully deployed global commands.')
+    await rest.put(route, { body: commands })
+
+    console.log('✅ Successfully deployed commands.')
   } catch (error) {
     console.error('❌ Error deploying commands:', error)
   }

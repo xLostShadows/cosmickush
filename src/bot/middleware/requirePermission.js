@@ -1,32 +1,40 @@
-import { PermissionsBitField } from 'discord.js'
-
-export function hasPermissions(...requiredPermissions) {
+export default function requirePermission(...requiredPermissions) {
     return async (interaction, next) => {
-        if (!interaction.inGuild) {
-            return interaction.reply({
+        if (!interaction.inGuild()) {
+            await interaction.reply({
                 content: '❌ This command can only be used in a server.',
                 ephemeral: true
             })
+            return false
         }
 
         const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null)
 
+        // Allow bot owner to bypass permission check
+        if (process.env.BOT_OWNER && interaction.user.id === process.env.BOT_OWNER) {
+            return typeof next === 'function' ? next() : true
+        }
+
         if (!member) {
-            return interaction.reply({
+            await interaction.reply({
                 content: '❌ Could not retrieve your member data. Please contact the bot developer.',
                 ephemeral: true
             })
+            return false
         }
 
         const missing = member.permissions.missing(requiredPermissions)
 
         if (missing.length > 0) {
-            return interaction.reply({
+            await interaction.reply({
                 content: `❌ You are missing the following permission(s): ${missing.map(perm => `\`${perm}\``).join(', ')}`,
                 ephemeral: true
             })
+            return false
         }
 
-        return next()
+        
+
+        return typeof next === 'function' ? next() : true
     }
 }
