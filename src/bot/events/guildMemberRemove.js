@@ -14,7 +14,7 @@ export default {
 
         if (welcomeEnabled) {
             if (config.welcomeChannelId) {
-                const welcomeChannel = guild.channels.cache.get(config.welcomeChannelId)
+                const welcomeChannel = guild.channels.cache.get(config.WELCOMECHANNELID)
                 if (welcomeChannel?.isTextBased()) {
                     welcomeChannel.send({
                         embeds: [
@@ -36,7 +36,7 @@ export default {
             }
         }
 
-        const modLogChannel = config.MODLOGCHANNEL
+        const modLogChannel = config.LOG_CHANNEL_ID
         const memberLogEnabled = config.MEMBERLOGENABLED
         if (memberLogEnabled){
             if (modLogChannel?.isTextBased) {
